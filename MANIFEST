@@ -1,0 +1,12 @@
+Build.PL
+Changes
+lib/Test/Number/Delta.pm
+LICENSE
+Makefile.PL
+MANIFEST			This list of files
+META.yml
+README
+t/01-module-basics.t
+t/02-delta.t
+t/03-specify_precision.t
+Todo

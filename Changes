@@ -1,0 +1,14 @@
+Revision history for Perl module Test::Number::Delta
+
+0.11 Tue Jan  4 00:01:20 EST 2005
+    - renamed to Test::Number::Delta
+    - renamed cmp_float() to delta_ok()
+    - added delta_within()
+    - added extra decimal place to numbers under comparison when printing
+      diagnostics
+
+0.10 Sun Dec 26 14:18:36 EST 2004
+    - initial release as Test::Float
+
+0.01 Sun Dec 26 13:12:10 2004
+	- original version; created by ExtUtils::ModuleMaker::TT

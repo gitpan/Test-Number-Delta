@@ -1,0 +1,9 @@
+If this is still here it means the programmer was too lazy to create the readme
+file.
+
+At the very least you should be able to use this set of instructions
+to install the module...
+perl Build.PL
+./Build
+./Build test
+./Build install
