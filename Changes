@@ -1,5 +1,8 @@
 Revision history for Perl module Test::Number::Delta
 
+0.14 Tue Mar  8 22:43:31 EST 2005
+    - added pod and pod coverage testing
+
 0.13 Wed Feb  2 22:06:56 EST 2005
     - added ability to pass through a test plan
     - added a parameter to specify that the default epsilon for delta_ok
