@@ -1,15 +1,17 @@
 package Test::Number::Delta;
+use 5.004;
 use strict;
-use warnings;
-use vars qw ($VERSION @EXPORT);
-$VERSION = "0.11";
+#use warnings; bah -- not supported before 5.006
+
+use vars qw ($VERSION @EXPORT @ISA);
+$VERSION = "0.12";
 
 # Required modules
 use Carp;
 use Test::Builder;
+use Exporter;
 
-# Exporter
-use base qw( Exporter );
+@ISA = qw( Exporter );
 @EXPORT = qw( delta_ok delta_within );
 
 #--------------------------------------------------------------------------#
@@ -65,7 +67,7 @@ provide a C<within> parameter when importing the module with C<use>:
  use Test::Number::Delta within => 1e-9;
 
 
-=cut
+=cut 
 
 my $Test = Test::Builder->new;
 my $Precision = 1e-6;
@@ -144,9 +146,7 @@ http://rt.cpan.org/NoAuth/Bugs.html?Dist=Test-Number-Delta
 
 =head1 AUTHOR
 
-David A. Golden (DAGOLDEN)
-
-david@dagolden.com
+David A Golden <dagolden@cpan.org>
 
 http://dagolden.com/
 

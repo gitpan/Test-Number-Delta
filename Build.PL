@@ -5,11 +5,12 @@ Module::Build->new
     ( module_name     => 'Test::Number::Delta',
       create_makefile_pl => "passthrough",
       license         => 'perl',
-	  requires        => {
-                           Test::Builder => 0.22,
-	                     },
-	  build_requires  => { 
-                           Test::Builder::Tester => 1.01,
-	                       Test::More => 0.53,
-	                     },
+      requires => {
+          perl => 5.004,
+          Test::Builder => 0.22,
+      },
+      build_requires => {
+          Test::Builder::Tester => 1.01,
+          Test::More => 0.54, 
+      },
 	)->create_build_script;

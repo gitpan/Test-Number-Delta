@@ -1,5 +1,9 @@
 Revision history for Perl module Test::Number::Delta
 
+0.12 Mon Jan 24 23:45:21 EST 2005
+    - pod fix
+    - Build.PL cleanup
+
 0.11 Tue Jan  4 00:01:20 EST 2005
     - renamed to Test::Number::Delta
     - renamed cmp_float() to delta_ok()
