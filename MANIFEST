@@ -8,5 +8,11 @@ META.yml
 README
 t/01-module-basics.t
 t/02-delta.t
-t/03-specify_precision.t
+t/03-specify_epsilon.t
+t/04-specify_relative.t
+t/05-check_bad_param.t
+t/06-plan_passthrough.t
+t/07-noplan_passthrough.t
+t/08-param_and_plan_passthrough.t
+t/09-bad_param_plan_order.t
 Todo

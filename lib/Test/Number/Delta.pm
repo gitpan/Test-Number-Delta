@@ -4,7 +4,7 @@ use strict;
 #use warnings; bah -- not supported before 5.006
 
 use vars qw ($VERSION @EXPORT @ISA);
-$VERSION = "0.12";
+$VERSION = "0.13";
 
 # Required modules
 use Carp;
@@ -21,93 +21,145 @@ use Exporter;
 =head1 NAME
 
 Test::Number::Delta - Compare if the difference between two numbers 
-is within a specified precision
+is within a specified amount
 
 =head1 SYNOPSIS
 
-  # Default precision
+  # Default tolerance
   use Test::Number::Delta;
   delta_ok( 1e-5, 2e-5, 'values within 1e-6'); # not ok
   
-  # Specific precision for a single test
+  # Specific tolerance for a single test
   delta_within( 1e-3, 2e-3, 1e-4, 'values within 1e-4'); not ok
   
-  # Set a different default precision
+  # Set a different default tolerance 
   use Test::Number::Delta within => 1e-5;
   delta_ok( 1e-5, 2e-5, 'values within 1e-5'); # ok
+  
+  # Set a relative tolerance
+  use Test::Number::Delta relative => 1e-3;
+  delta_ok( 1.01, 1.0099, 'values within 1.01e-3'); # ok
 
   
 =head1 DESCRIPTION
 
-Most programmers at one time or another are confronted with the 
-issue of comparing floating-point numbers for equality.  The 
-canonical idiom is to test if the absolute value of the difference
-of the numbers is within a desired precision.  This module provides 
-such a function for use with L<Test::Harness>.  Usage is similar 
-to other test functions described in L<Test::More>.  Semantically,
-the C<delta_within> function replaces this kind of construct:
+Most programmers at one time or another are confronted with the issue of
+comparing floating-point numbers for equality.  The typical idiom is to test
+if the absolute value of the difference of the numbers is within a desired
+tolerance, usually called epsilon.  This module provides such a function for use
+with L<Test::Harness>.  Usage is similar to other test functions described in
+L<Test::More>.  Semantically, the C<delta_within> function replaces this kind
+of construct:
 
- ok ( abs($p - $q) <= $precision, '$p is equal to $q' ) or
-     diag "$p is not equal to $q to within $precision";
+ ok ( abs($p - $q) <= $epsilon, '$p is equal to $q' ) or
+     diag "$p is not equal to $q to within $epsilon";
 
-While there's nothing wrong with that construct, it's a pain to 
-type it repeatedly in a test script.  This module does the same thing
-with a single function call.  The C<delta_ok> function is similar,
-but uses a global default precision so even the precision need not
-be specified repeatedly.  Both functions are exported automatically.
+While there's nothing wrong with that construct, it's a pain to type it
+repeatedly in a test script.  This module does the same thing with a single
+function call.  The C<delta_ok> function is similar, but either uses a
+global default value for epsilon so that it does not need to be specified
+repeatedly or else calculates a 'relative' epsilon on the fly so that 
+epsilon is scaled automatically to the size of the arguments to C<delta_ok>.
+Both functions are exported automatically.
 
 =head1 USAGE
 
-=head2 Setting the default precision
+=head2 use Test::Number::Delta;
 
-By default, C<use Test::Number::Delta> will compare equality with a precision
-of 1e-6.  (An arbitrary choice on my part.)  To specific a different precision,
-provide a C<within> parameter when importing the module with C<use>:
+With no arguments, epsilon defaults to 1e-6. (An arbitrary choice on my part.)
 
- use Test::Number::Delta within => 1e-9;
+=head2 use Test::Number::Delta within => 1e-9;
 
+To specify a different default value for epsilon, provide a C<within> parameter
+when importing the module.
+
+=head2 use Test::Number::Delta relative => 1e-3;
+
+As an alternative to using a fixed value for epsilon, provide a C<relative>
+parameter when importing the module.  This signals that C<delta_ok> should 
+test equality with an epsilon that is scaled to the size of the arguments.  
+Epsilon is calculated as the relative value times the absolute value
+of the argument with the greatest magnitude.  Mathematically, for arguments 
+'x' and 'y':
+
+ epsilon = relative * max( abs(x), abs(y) )
+
+For example, a relative value of "0.01" would mean that the arguments are equal
+if they differ by no more than 1% of the larger of the two values.  A relative
+value of 1e-6 means that the arguments must differ by no more than 1 millionth
+of the larger value.
+
+=head2 Combining with a test plan
+
+ use Test::Number::Delta 'no_plan';
+ 
+ # or
+ 
+ use Test::Number::Delta within => 1e-9, tests => 1;
+ 
+If a test plan has not already been specified, the optional 
+parameter for Test::Number::Delta may be followed with a test plan (see 
+L<Test::More> for details).  If a parameter for Test::Number::Delta is
+given, it must come first.
 
 =cut 
 
 my $Test = Test::Builder->new;
-my $Precision = 1e-6;
+my $Epsilon = 1e-6;
+my $Relative = undef;
 
 sub import {
-    my($self, %args) = @_;
+    my $self = shift;
     my $pack = caller;
-    if (exists $args{within}) {
-        $Precision = $args{within};
-    }
-    
+    my $found = grep /within|relative/, @_;
+    croak "Can't specify more than one of 'within' or 'relative'"
+        if $found > 1;
+    if ($found) {
+    my ($param,$value) = splice @_, 0, 2;
+        if ($param eq 'within') {
+            $Epsilon = $value;
+        }
+        elsif ($param eq 'relative') {
+            $Relative = $value;
+        }
+        else {
+            croak "Test::Number::Delta parameters must come first";
+        }
+    } 
     $Test->exported_to($pack);
+    $Test->plan(@_);
     $self->export_to_level(1, $self, 'delta_ok');
     $self->export_to_level(1, $self, 'delta_within');
 }
 
+=head1 FUNCTIONS
+
+=cut 
 
 #--------------------------------------------------------------------------#
 # delta_within()
-#
+#--------------------------------------------------------------------------#
 
 =head2 delta_within
  
- delta_within( $p, $q, $prec, '$p and $q are equal within $prec' );
+ delta_within( $p, $q, $epsilon, '$p and $q are equal within $epsilon' );
 
-This test compares equality within a given precision.  The test is true if the
-absolute value of the difference between $p and $q is B<less than or equal to>
-the precision.  If the test is true, it prints an "OK" statement for use in
-testing.  If the test is not true, this function prints a failure report and
-diagnostic.
+This test compares equality within a given value of epsilon. The test is true
+if the absolute value of the difference between $p and $q is B<less than or
+equal to> epsilon.  If the test is true, it prints an "OK" statement for
+use in testing.  If the test is not true, this function prints a failure report
+and diagnostic.
 
 =cut
 
 sub delta_within($$$;$) {
-	my ($p, $q, $prec, $name) = @_;
-    my $delta_prec = -log($prec)/log(10);
-    my $in_prec = $delta_prec + 1;
-    return $Test->ok(abs($p - $q) <= $prec,$name) || $Test->diag(
-        sprintf("%.${in_prec}f and %.${in_prec}f are not equal to within %.${delta_prec}f",
-                $p, $q, $prec));
+	my ($p, $q, $epsilon, $name) = @_;
+    my ($exp) = sprintf("%e",$epsilon) =~ m/e(.+)/;
+    my $ep = $exp < 0 ? -$exp : 1;
+    my $dp = $ep + 1;
+    return $Test->ok(abs($p - $q) <= $epsilon,$name) || $Test->diag(
+        sprintf("%.${dp}f and %.${dp}f are not equal to within %.${ep}f",
+                $p, $q, $epsilon));
 }
 
 #--------------------------------------------------------------------------#
@@ -116,14 +168,19 @@ sub delta_within($$$;$) {
 
 =head2 delta_ok
  
- delta_ok( $p, $q, '$p and $q are equal' );
+ delta_ok( $p, $q, '$p and $q are close enough to equal' );
 
-This test compares equality within the default precision specified during
-import (or the default of 1e-6).  The test is true if the absolute value
-of the difference between $p and $q is B<less than or equal to> the default
-precision.  If the test is true, it prints an "OK" statement for use
-in testing.  If the test is not true, this function prints a failure report 
-and diagnostic.
+This test compares equality using one of two pre-set approaches for determining
+epsilon.  (See L</USAGE>)  If a C<within> parameter was provided during
+C<use>, that value is the default for epsilon.  If a C<relative> parameter was
+provided, that value is multiplied by the larger absolute value of the
+arguments to C<delta_ok> to determine epsilon for that comparison.  If neither
+parameter was specified, the default epsilon is 1e-6.
+ 
+The test is true if the absolute value of the difference between $p and $q is
+B<less than or equal to> epsilon.  If the test is true, it prints an "OK"
+statement for use in testing.  If the test is not true, this function prints a
+failure report and diagnostic.
 
 =cut
 
@@ -131,7 +188,10 @@ sub delta_ok($$;$) {
 	my ($p, $q, $name) = @_;
     {
         local $Test::Builder::Level = 2;
-        delta_within( $p, $q, $Precision, $name );
+        my $e = $Relative 
+            ? $Relative * (abs($p) > abs($q) ? abs($p) : abs($q))
+            : $Epsilon;
+        delta_within( $p, $q, $e, $name );
     }
 }
 

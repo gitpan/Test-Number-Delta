@@ -11,6 +11,7 @@ Module::Build->new
       },
       build_requires => {
           Test::Builder::Tester => 1.01,
+          Test::Exception => 0.19,
           Test::More => 0.54, 
       },
 	)->create_build_script;
