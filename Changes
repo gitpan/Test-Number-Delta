@@ -1,5 +1,8 @@
 Revision history for Perl module Test::Number::Delta
 
+0.16 Thu Jun  9 15:55:03 EDT 2005
+    - removed pod/podcoverage testing to minimize dependencies
+
 0.15 Tue Jun  7 17:46:36 EDT 2005
     - updated Build.PL for dependencies and traditional makefiles
 

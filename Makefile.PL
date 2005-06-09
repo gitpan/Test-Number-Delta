@@ -8,11 +8,10 @@ WriteMakefile
                            'Test::Builder' => '0.3',
                            'Test::Builder::Tester' => '1.01',
                            'Test::Exception' => '0.2',
-                           'Test::More' => '0.6',
-                           'Test::Pod' => '1.2',
-                           'Test::Pod::Coverage' => '1.06'
+                           'Test::More' => '0.47'
                          },
           'INSTALLDIRS' => 'site',
+          'EXE_FILES' => [],
           'PL_FILES' => {}
         )
 ;

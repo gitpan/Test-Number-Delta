@@ -1,6 +1,6 @@
 ---
 name: Test-Number-Delta
-version: 0.15
+version: 0.16
 author:
   - David A Golden <dagolden@cpan.org>
 abstract: |-
@@ -13,11 +13,9 @@ requires:
 build_requires:
   Test::Builder::Tester: 1.01
   Test::Exception: 0.2
-  Test::More: 0.6
-  Test::Pod: 1.2
-  Test::Pod::Coverage: 1.06
+  Test::More: 0.47
 provides:
   Test::Number::Delta:
     file: lib/Test/Number/Delta.pm
-    version: 0.15
-generated_by: Module::Build version 0.2608
+    version: 0.16
+generated_by: Module::Build version 0.2701
