@@ -1,5 +1,8 @@
 Revision history for Perl module Test::Number::Delta
 
+0.17 Mon Aug  1 10:55:13 EDT 2005
+    - build_requires moved to requires to workaround CPANPLUS bug
+
 0.16 Thu Jun  9 15:55:03 EDT 2005
     - removed pod/podcoverage testing to minimize dependencies
 

@@ -24,7 +24,7 @@ DESCRIPTION
     test if the absolute value of the difference of the numbers is within a
     desired tolerance, usually called epsilon. This module provides such a
     function for use with Test::Harness. Usage is similar to other test
-    functions described in Test::More. Semantically, the "delta_within"
+    functions described in Test::More. Semantically, the `delta_within'
     function replaces this kind of construct:
 
      ok ( abs($p - $q) <= $epsilon, '$p is equal to $q' ) or
@@ -32,25 +32,28 @@ DESCRIPTION
 
     While there's nothing wrong with that construct, it's a pain to type it
     repeatedly in a test script. This module does the same thing with a
-    single function call. The "delta_ok" function is similar, but either
+    single function call. The `delta_ok' function is similar, but either
     uses a global default value for epsilon so that it does not need to be
     specified repeatedly or else calculates a 'relative' epsilon on the fly
     so that epsilon is scaled automatically to the size of the arguments to
-    "delta_ok". Both functions are exported automatically.
+    `delta_ok'. Both functions are exported automatically.
 
 USAGE
   use Test::Number::Delta;
+
     With no arguments, epsilon defaults to 1e-6. (An arbitrary choice on my
     part.)
 
   use Test::Number::Delta within => 1e-9;
-    To specify a different default value for epsilon, provide a "within"
+
+    To specify a different default value for epsilon, provide a `within'
     parameter when importing the module.
 
   use Test::Number::Delta relative => 1e-3;
+
     As an alternative to using a fixed value for epsilon, provide a
-    "relative" parameter when importing the module. This signals that
-    "delta_ok" should test equality with an epsilon that is scaled to the
+    `relative' parameter when importing the module. This signals that
+    `delta_ok' should test equality with an epsilon that is scaled to the
     size of the arguments. Epsilon is calculated as the relative value times
     the absolute value of the argument with the greatest magnitude.
     Mathematically, for arguments 'x' and 'y':
@@ -63,6 +66,7 @@ USAGE
     no more than 1 millionth of the larger value.
 
   Combining with a test plan
+
      use Test::Number::Delta 'no_plan';
  
      # or
@@ -76,6 +80,7 @@ USAGE
 
 FUNCTIONS
   delta_within
+
      delta_within( $p, $q, $epsilon, '$p and $q are equal within $epsilon' );
 
     This test compares equality within a given value of epsilon. The test is
@@ -85,13 +90,14 @@ FUNCTIONS
     prints a failure report and diagnostic.
 
   delta_ok
+
      delta_ok( $p, $q, '$p and $q are close enough to equal' );
 
     This test compares equality using one of two pre-set approaches for
-    determining epsilon. (See "USAGE") If a "within" parameter was provided
-    during "use", that value is the default for epsilon. If a "relative"
+    determining epsilon. (See USAGE) If a `within' parameter was provided
+    during `use', that value is the default for epsilon. If a `relative'
     parameter was provided, that value is multiplied by the larger absolute
-    value of the arguments to "delta_ok" to determine epsilon for that
+    value of the arguments to `delta_ok' to determine epsilon for that
     comparison. If neither parameter was specified, the default epsilon is
     1e-6.
 

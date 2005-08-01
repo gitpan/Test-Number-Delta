@@ -4,7 +4,7 @@ use strict;
 #use warnings; bah -- not supported before 5.006
 
 use vars qw ($VERSION @EXPORT @ISA);
-$VERSION = "0.16";
+$VERSION = "0.17";
 
 # Required modules
 use Carp;

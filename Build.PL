@@ -9,10 +9,11 @@ Module::Build->new
       requires => {
           perl => 5.004,
           Test::Builder => 0.3, # (0.11 since perl 5.007003, 0.3 is new)
-      },
-      build_requires => {
+          # build requires here
           Test::Builder::Tester => 1.01,
           Test::Exception => 0.20,
           Test::More => 0.47,
+      },
+      build_requires => {
       },
 	)->create_build_script;
