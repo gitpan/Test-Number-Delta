@@ -2,16 +2,15 @@
 use ExtUtils::MakeMaker;
 WriteMakefile
 (
+          'PL_FILES' => {},
+          'INSTALLDIRS' => 'site',
           'NAME' => 'Test::Number::Delta',
+          'EXE_FILES' => [],
           'VERSION_FROM' => 'lib/Test/Number/Delta.pm',
           'PREREQ_PM' => {
+                           'Test::More' => '0.45',
                            'Test::Builder' => '0.3',
-                           'Test::Builder::Tester' => '1.01',
-                           'Test::Exception' => '0.2',
-                           'Test::More' => '0.47'
-                         },
-          'INSTALLDIRS' => 'site',
-          'EXE_FILES' => [],
-          'PL_FILES' => {}
+                           'Test::Builder::Tester' => '1.01'
+                         }
         )
 ;

@@ -1,5 +1,11 @@
 Revision history for Perl module Test::Number::Delta
 
+0.18 Sun Feb  5 06:48:15 EST 2006
+    - removed Test::Exception as dependency
+    - restored pod/pod-coverage tests as optional (skipped by default)
+    - edited Pod for bugs/license tests
+    - removed 5.006 syntax (warnings!) from test files
+
 0.17 Mon Aug  1 10:55:13 EDT 2005
     - build_requires moved to requires to workaround CPANPLUS bug
 

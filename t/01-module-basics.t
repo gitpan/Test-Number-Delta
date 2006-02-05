@@ -1,9 +1,4 @@
-#!/usr/bin/perl
 use strict;
-use warnings;
-use blib;  
-
-# Test::Number::Delta  
 
 use Test::More tests => 2;
 

@@ -3,7 +3,7 @@ use Module::Build;
 
 Module::Build->new
     ( module_name     => 'Test::Number::Delta',
-      create_makefile_pl => "traditional",
+      create_makefile_pl => 'traditional',
       create_readme => 1,
       license         => 'perl',
       requires => {
@@ -11,9 +11,6 @@ Module::Build->new
           Test::Builder => 0.3, # (0.11 since perl 5.007003, 0.3 is new)
           # build requires here
           Test::Builder::Tester => 1.01,
-          Test::Exception => 0.20,
-          Test::More => 0.47,
-      },
-      build_requires => {
+          Test::More => 0.45,
       },
 	)->create_build_script;

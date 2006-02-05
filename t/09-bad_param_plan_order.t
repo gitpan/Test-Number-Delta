@@ -1,11 +1,8 @@
-#!/usr/bin/perl
 use strict;
-use warnings;
-use blib;  
+use Test::More tests => 2;
 
-# Test::Number::Delta  
-use Test::Exception tests => 1;
-require Test::Number::Delta;
-dies_ok { Test::Number::Delta->import(tests => 1, within => 1e-4) }
-    "dies if parameter is given after test plan";
+require_ok( "Test::Number::Delta" );
+
+eval { Test::Number::Delta->import(tests => 1, within => 1e-4) };
+ok( $@, "dies if parameter is given after test plan" );
 
