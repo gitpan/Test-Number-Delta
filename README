@@ -17,6 +17,11 @@ SYNOPSIS
   # Set a relative tolerance
       use Test::Number::Delta relative => 1e-3;
       delta_ok( 1.01, 1.0099, 'values within 1.01e-3'); # ok
+     
+  # Compare arrays or matrices
+      @a = ( 3.14, 1.41 );
+      @b = ( 3.15, 1.41 );
+      delta_ok( \@a, \@b, 'compare @a and @b' );
 
 DESCRIPTION
     Most programmers at one time or another are confronted with the issue of
@@ -76,7 +81,8 @@ USAGE
 
 FUNCTIONS
   delta_within
-     delta_within( $p, $q, $epsilon, '$p and $q are equal within $epsilon' );
+     delta_within(  $p,  $q, $epsilon, '$p and $q are equal within $epsilon' );
+     delta_within( \@p, \@q, $epsilon, '@p and @q are equal within $epsilon' );
 
     This test compares equality within a given value of epsilon. The test is
     true if the absolute value of the difference between $p and $q is less
@@ -84,8 +90,29 @@ FUNCTIONS
     statement for use in testing. If the test is not true, this function
     prints a failure report and diagnostic.
 
+    The values to compare may be scalars or references to arrays. If the
+    values are references to arrays, the comparison is done pairwise for
+    each index value of the array. The pairwise comparison is recursive, so
+    matrices may be compared as well.
+
+    For example, this code sample compares two matrices:
+
+        my @a = (   [ 3.14, 6.28 ],
+                    [ 1.41, 2.84 ]   );
+
+        my @b = (   [ 3.14, 6.28 ],
+                    [ 1.42, 2.84 ]   );
+
+        delta_ok( \@a, \@b, 'compare @a and @b' );
+
+    The sample prints the following:
+
+        not ok 1 - compare @a and @b
+        # At [1][0]: 1.4100000 and 1.4200000 are not equal to within 0.000001
+
   delta_ok
-     delta_ok( $p, $q, '$p and $q are close enough to equal' );
+     delta_ok(  $p,  $q, '$p and $q are close enough to equal' );
+     delta_ok( \@p, \@q, '@p and @q are close enough to equal' );
 
     This test compares equality using one of two pre-set approaches for
     determining epsilon. (See "USAGE") If a "within" parameter was provided
@@ -99,6 +126,9 @@ FUNCTIONS
     $q is less than or equal to epsilon. If the test is true, it prints an
     "OK" statement for use in testing. If the test is not true, this
     function prints a failure report and diagnostic.
+
+    As with "delta_within", the values to compare may be scalars or
+    references to arrays.
 
 SEE ALSO
     Test::More, Test::Harness, Test::Builder
@@ -120,7 +150,7 @@ AUTHOR
     <http://dagolden.com/>
 
 COPYRIGHT
-    Copyright (c) 2005 by David A. Golden
+    Copyright (c) 2005, 2006 by David A. Golden
 
     This program is free software; you can redistribute it and/or modify it
     under the same terms as Perl itself.

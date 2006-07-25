@@ -9,8 +9,8 @@ WriteMakefile
           'VERSION_FROM' => 'lib/Test/Number/Delta.pm',
           'PREREQ_PM' => {
                            'Test::More' => '0.45',
-                           'Test::Builder' => '0.3',
-                           'Test::Builder::Tester' => '1.01'
+                           'Test::Builder' => '0.32',
+                           'Test::Builder::Tester' => '1.02'
                          }
         )
 ;

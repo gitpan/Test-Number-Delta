@@ -4,7 +4,7 @@ use strict;
 #use warnings; bah -- not supported before 5.006
 
 use vars qw ($VERSION @EXPORT @ISA);
-$VERSION = "0.18";
+$VERSION = "1.00";
 
 # Required modules
 use Carp;
@@ -35,7 +35,11 @@ is within a specified amount
   # Set a relative tolerance
   use Test::Number::Delta relative => 1e-3;
   delta_ok( 1.01, 1.0099, 'values within 1.01e-3'); # ok
-
+ 
+  # Compare arrays or matrices
+  @a = ( 3.14, 1.41 );
+  @b = ( 3.15, 1.41 );
+  delta_ok( \@a, \@b, 'compare @a and @b' );
   
 =head1 DESCRIPTION
 
@@ -133,12 +137,56 @@ sub import {
 =cut 
 
 #--------------------------------------------------------------------------#
+# _check -- recursive function to perform comparison
+#--------------------------------------------------------------------------#
+
+sub _check {
+    my ($p, $q, $epsilon, $name, @indices) = @_;
+    my ($exp) = sprintf("%e",$epsilon) =~ m/e(.+)/;
+    my $ep = $exp < 0 ? -$exp : 1;
+    my $dp = $ep + 1;
+    my ($ok, $diag) = ( 1, q{} ); # assume true
+    if ( ref $p eq 'ARRAY' || ref $q eq 'ARRAY' ) {
+        if ( @$p == @$q ) {
+            for my $i ( 0 .. $#{$p} ) {
+                my @new_indices;
+                ($ok, $diag, @new_indices) = _check( 
+                    $p->[$i], 
+                    $q->[$i], 
+                    $epsilon, 
+                    $name,
+                    scalar @indices ? @indices : (),
+                    $i,
+                );
+                if ( not $ok ) {
+                    @indices = @new_indices;
+                    last;
+                }
+            }
+        }
+        else {
+            $ok = 0;
+            $diag = "Got an array of length " . scalar(@$p) .
+                    ", but expected an array of length " . scalar(@$q);
+        }
+    }
+    else {
+        $ok = abs($p - $q) <= $epsilon;
+        $diag = $ok ? '' :
+            sprintf("%.${dp}f and %.${dp}f are not equal to within %.${ep}f",
+                    $p, $q, $epsilon);
+    }
+    return ( $ok, $diag, scalar(@indices) ? @indices : () );
+}
+
+#--------------------------------------------------------------------------#
 # delta_within()
 #--------------------------------------------------------------------------#
 
 =head2 delta_within
  
- delta_within( $p, $q, $epsilon, '$p and $q are equal within $epsilon' );
+ delta_within(  $p,  $q, $epsilon, '$p and $q are equal within $epsilon' );
+ delta_within( \@p, \@q, $epsilon, '@p and @q are equal within $epsilon' );
 
 This test compares equality within a given value of epsilon. The test is true
 if the absolute value of the difference between $p and $q is B<less than or
@@ -146,16 +194,35 @@ equal to> epsilon.  If the test is true, it prints an "OK" statement for
 use in testing.  If the test is not true, this function prints a failure report
 and diagnostic.
 
+The values to compare may be scalars or references to arrays.  If the values
+are references to arrays, the comparison is done pairwise for each index value
+of the array.  The pairwise comparison is recursive, so matrices may
+be compared as well.
+
+For example, this code sample compares two matrices:
+
+    my @a = (   [ 3.14, 6.28 ],
+                [ 1.41, 2.84 ]   );
+
+    my @b = (   [ 3.14, 6.28 ],
+                [ 1.42, 2.84 ]   );
+
+    delta_ok( \@a, \@b, 'compare @a and @b' );
+
+The sample prints the following:
+
+    not ok 1 - compare @a and @b
+    # At [1][0]: 1.4100000 and 1.4200000 are not equal to within 0.000001
+
 =cut
 
 sub delta_within($$$;$) {
 	my ($p, $q, $epsilon, $name) = @_;
-    my ($exp) = sprintf("%e",$epsilon) =~ m/e(.+)/;
-    my $ep = $exp < 0 ? -$exp : 1;
-    my $dp = $ep + 1;
-    return $Test->ok(abs($p - $q) <= $epsilon,$name) || $Test->diag(
-        sprintf("%.${dp}f and %.${dp}f are not equal to within %.${ep}f",
-                $p, $q, $epsilon));
+    my ($ok, $diag, @indices) = _check( $p, $q, $epsilon, $name );
+    if ( @indices ) {
+        $diag = "At [" . join( "][", @indices ) . "]: $diag";
+    }
+    return $Test->ok($ok,$name) || $Test->diag( $diag );
 }
 
 #--------------------------------------------------------------------------#
@@ -164,7 +231,8 @@ sub delta_within($$$;$) {
 
 =head2 delta_ok
  
- delta_ok( $p, $q, '$p and $q are close enough to equal' );
+ delta_ok(  $p,  $q, '$p and $q are close enough to equal' );
+ delta_ok( \@p, \@q, '@p and @q are close enough to equal' );
 
 This test compares equality using one of two pre-set approaches for determining
 epsilon.  (See L</USAGE>)  If a C<within> parameter was provided during
@@ -178,12 +246,15 @@ B<less than or equal to> epsilon.  If the test is true, it prints an "OK"
 statement for use in testing.  If the test is not true, this function prints a
 failure report and diagnostic.
 
+As with C<delta_within>, the values to compare may be scalars or references 
+to arrays.
+
 =cut
 
 sub delta_ok($$;$) {
 	my ($p, $q, $name) = @_;
     {
-        local $Test::Builder::Level = 2;
+        local $Test::Builder::Level = $Test::Builder::Level + 1;
         my $e = $Relative 
             ? $Relative * (abs($p) > abs($q) ? abs($p) : abs($q))
             : $Epsilon;
@@ -219,7 +290,7 @@ L<http://dagolden.com/>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2005 by David A. Golden
+Copyright (c) 2005, 2006 by David A. Golden
 
 This program is free software; you can redistribute
 it and/or modify it under the same terms as Perl itself.

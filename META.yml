@@ -1,8 +1,8 @@
 ---
 name: Test-Number-Delta
-version: 0.18
+version: 1.00
 author:
-  - dagolden@cpan.org
+  - 'David A. Golden <dagolden@cpan.org>'
 abstract: |-
   Compare if the difference between two numbers 
   is within a specified amount
@@ -10,12 +10,15 @@ license: perl
 resources:
   license: http://dev.perl.org/licenses/
 requires:
-  Test::Builder: 0.3
-  Test::Builder::Tester: 1.01
+  Test::Builder: 0.32
+  Test::Builder::Tester: 1.02
   Test::More: 0.45
   perl: 5.004
 provides:
   Test::Number::Delta:
     file: lib/Test/Number/Delta.pm
-    version: 0.18
-generated_by: Module::Build version 0.2703
+    version: 1.00
+generated_by: Module::Build version 0.2804
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.2.html
+  version: 1.2
