@@ -4,7 +4,7 @@ use strict;
 #use warnings; bah -- not supported before 5.006
 
 use vars qw ($VERSION @EXPORT @ISA);
-$VERSION = "1.00";
+$VERSION = "1.01";
 
 # Required modules
 use Carp;
@@ -16,8 +16,8 @@ use Exporter;
 
 =head1 NAME
 
-Test::Number::Delta - Compare if the difference between two numbers 
-is within a specified amount
+Test::Number::Delta - Compare if the difference between numbers 
+is less than a given tolerance
 
 =head1 SYNOPSIS
 
@@ -30,7 +30,7 @@ is within a specified amount
   
   # Set a different default tolerance 
   use Test::Number::Delta within => 1e-5;
-  delta_ok( 1e-5, 2e-5, 'values within 1e-5'); # ok
+  delta_ok( 1.1e-5, 2e-5, 'values within 1e-5'); # ok
   
   # Set a relative tolerance
   use Test::Number::Delta relative => 1e-3;
@@ -43,30 +43,35 @@ is within a specified amount
   
 =head1 DESCRIPTION
 
-Most programmers at one time or another are confronted with the issue of
-comparing floating-point numbers for equality.  The typical idiom is to test
+At some point or another, most programmers find they need to compare
+floating-point numbers for equality.  The typical idiom is to test
 if the absolute value of the difference of the numbers is within a desired
 tolerance, usually called epsilon.  This module provides such a function for use
 with L<Test::Harness>.  Usage is similar to other test functions described in
 L<Test::More>.  Semantically, the C<delta_within> function replaces this kind
 of construct:
 
- ok ( abs($p - $q) <= $epsilon, '$p is equal to $q' ) or
+ ok ( abs($p - $q) < $epsilon, '$p is equal to $q' ) or
      diag "$p is not equal to $q to within $epsilon";
 
-While there's nothing wrong with that construct, it's a pain to type it
+While there's nothing wrong with that construct, it's painful to type it
 repeatedly in a test script.  This module does the same thing with a single
-function call.  The C<delta_ok> function is similar, but either uses a
-global default value for epsilon so that it does not need to be specified
-repeatedly or else calculates a 'relative' epsilon on the fly so that 
-epsilon is scaled automatically to the size of the arguments to C<delta_ok>.
-Both functions are exported automatically.
+function call.  The C<delta_ok> function is similar, but either uses a global
+default value for epsilon or else calculates a 'relative' epsilon on
+the fly so that epsilon is scaled automatically to the size of the arguments to
+C<delta_ok>.  Both functions are exported automatically.
+
+Because checking floating-point equality is not always reliable, it is not
+possible to check the 'equal to' boundary of 'less than or equal to
+epsilon'.  Therefore, Test::Number::Delta only compares if the absolute value
+of the difference is B<less than> epsilon. 
 
 =head1 USAGE
 
 =head2 use Test::Number::Delta;
 
-With no arguments, epsilon defaults to 1e-6. (An arbitrary choice on my part.)
+With no arguments, epsilon defaults to 1e-6. (An arbitrary choice on the
+author's part.)
 
 =head2 use Test::Number::Delta within => 1e-9;
 
@@ -85,8 +90,8 @@ of the argument with the greatest magnitude.  Mathematically, for arguments
  epsilon = relative * max( abs(x), abs(y) )
 
 For example, a relative value of "0.01" would mean that the arguments are equal
-if they differ by no more than 1% of the larger of the two values.  A relative
-value of 1e-6 means that the arguments must differ by no more than 1 millionth
+if they differ by less than 1% of the larger of the two values.  A relative
+value of 1e-6 means that the arguments must differ by less than 1 millionth
 of the larger value.
 
 =head2 Combining with a test plan
@@ -171,7 +176,7 @@ sub _check {
         }
     }
     else {
-        $ok = abs($p - $q) <= $epsilon;
+        $ok = abs($p - $q) < $epsilon;
         $diag = $ok ? '' :
             sprintf("%.${dp}f and %.${dp}f are not equal to within %.${ep}f",
                     $p, $q, $epsilon);
@@ -189,10 +194,9 @@ sub _check {
  delta_within( \@p, \@q, $epsilon, '@p and @q are equal within $epsilon' );
 
 This test compares equality within a given value of epsilon. The test is true
-if the absolute value of the difference between $p and $q is B<less than or
-equal to> epsilon.  If the test is true, it prints an "OK" statement for
-use in testing.  If the test is not true, this function prints a failure report
-and diagnostic.
+if the absolute value of the difference between $p and $q is B<less than>
+epsilon.  If the test is true, it prints an "OK" statement for use in testing.
+If the test is not true, this function prints a failure report and diagnostic.
 
 The values to compare may be scalars or references to arrays.  If the values
 are references to arrays, the comparison is done pairwise for each index value
@@ -207,7 +211,7 @@ For example, this code sample compares two matrices:
     my @b = (   [ 3.14, 6.28 ],
                 [ 1.42, 2.84 ]   );
 
-    delta_ok( \@a, \@b, 'compare @a and @b' );
+    delta_within( \@a, \@b, 1e-6, 'compare @a and @b' );
 
 The sample prints the following:
 
@@ -242,7 +246,7 @@ arguments to C<delta_ok> to determine epsilon for that comparison.  If neither
 parameter was specified, the default epsilon is 1e-6.
  
 The test is true if the absolute value of the difference between $p and $q is
-B<less than or equal to> epsilon.  If the test is true, it prints an "OK"
+B<less than> epsilon.  If the test is true, it prints an "OK"
 statement for use in testing.  If the test is not true, this function prints a
 failure report and diagnostic.
 

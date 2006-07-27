@@ -14,7 +14,7 @@ delta_ok(1e-5, 2e-5, "foo");
 test_test("delta_ok(\$a,\$b) fail works");
 
 test_out("ok 1 - foo");
-delta_ok(1e-6, 2e-6, "foo");
+delta_ok(1.1e-6, 2e-6, "foo");
 test_test("delta_ok(\$a,\$b) pass works");
 
 test_out("not ok 1 - foo");
@@ -24,7 +24,7 @@ delta_within(1e-3, 2e-3, 1e-4, "foo");
 test_test("delta_within(\$a,\$b,\$e) fail works");
 
 test_out("ok 1 - foo");
-delta_within(1e-4, 2e-4, 1e-4, "foo");
+delta_within(1.1e-4, 2e-4, 1e-4, "foo");
 test_test("delta_within(\$a,\$b,\$e) pass works");
 
 #--------------------------------------------------------------------------#

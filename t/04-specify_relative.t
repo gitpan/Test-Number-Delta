@@ -16,11 +16,11 @@ delta_ok(-50, -49.4, "foo");
 test_test("fail works");
 
 test_out("ok 1 - foo");
-delta_ok(10e-5, 9.9e-5, "foo");
+delta_ok(10e-5, 9.91e-5, "foo");
 test_test("ok works");
 
 test_out("ok 1 - foo");
-delta_ok(-9.9e-5, -10e-5, "foo");
+delta_ok(-9.91e-5, -10e-5, "foo");
 test_test("ok works");
 
 test_out("ok 1 - foo");
@@ -28,7 +28,7 @@ delta_ok(1.01, 1.0099, "foo");
 test_test("ok works");
 
 test_out("ok 1 - foo");
-delta_ok(-100, -99, "foo");
+delta_ok(-100, -99.1, "foo");
 test_test("ok works");
 
 

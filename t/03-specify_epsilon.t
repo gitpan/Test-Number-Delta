@@ -10,6 +10,6 @@ delta_ok(1e-3, 2e-3, "foo");
 test_test("fail works");
 
 test_out("ok 1 - foo");
-delta_ok(1e-4, 2e-4, "foo");
+delta_ok(1.1e-4, 2e-4, "foo");
 test_test("ok works");
 
