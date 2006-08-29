@@ -1,4 +1,6 @@
 TODO list for Perl module Test::Number::Delta
 
-- nothing right now
+- better export handling (use Sub::Exporter)?
+
+- rename everything to be Test::Number::Equality (e.g equal_ok)?
 

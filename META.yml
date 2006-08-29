@@ -1,11 +1,9 @@
 ---
 name: Test-Number-Delta
-version: 1.01
+version: 1.02
 author:
   - 'David A. Golden <dagolden@cpan.org>'
-abstract: |-
-  Compare if the difference between numbers 
-  is less than a given tolerance
+abstract: Compare the difference between numbers against a given tolerance
 license: perl
 resources:
   license: http://dev.perl.org/licenses/
@@ -17,8 +15,8 @@ requires:
 provides:
   Test::Number::Delta:
     file: lib/Test/Number/Delta.pm
-    version: 1.01
-generated_by: Module::Build version 0.2804
+    version: 1.02
+generated_by: Module::Build version 0.2805
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html
   version: 1.2

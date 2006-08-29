@@ -1,27 +1,33 @@
 NAME
-    Test::Number::Delta - Compare if the difference between numbers is less
-    than a given tolerance
+    Test::Number::Delta - Compare the difference between numbers against a
+    given tolerance
 
 SYNOPSIS
-      # Default tolerance
+      # Import test functions
       use Test::Number::Delta;
-      delta_ok( 1e-5, 2e-5, 'values within 1e-6'); # not ok
       
-  # Specific tolerance for a single test
-      delta_within( 1e-3, 2e-3, 1e-4, 'values within 1e-4'); not ok
+  # Equality test with default tolerance
+      delta_ok( 1e-5, 2e-5, 'values within 1e-6');
       
-  # Set a different default tolerance 
+  # Inequality test with default tolerance
+      delta_not_ok( 1e-5, 2e-5, 'values not within 1e-6');
+      
+  # Provide specific tolerance
+      delta_within( 1e-3, 2e-3, 1e-4, 'values within 1e-4');         
+      delta_not_within( 1e-3, 2e-3, 1e-4, 'values not within 1e-4');
+      
+  # Compare arrays or matrices
+      @a = ( 3.14, 1.41 );
+      @b = ( 3.15, 1.41 );
+      delta_ok( \@a, \@b, 'compare @a and @b' );
+
+      # Set a different default tolerance 
       use Test::Number::Delta within => 1e-5;
       delta_ok( 1.1e-5, 2e-5, 'values within 1e-5'); # ok
       
   # Set a relative tolerance
       use Test::Number::Delta relative => 1e-3;
-      delta_ok( 1.01, 1.0099, 'values within 1.01e-3'); # ok
-     
-  # Compare arrays or matrices
-      @a = ( 3.14, 1.41 );
-      @b = ( 3.15, 1.41 );
-      delta_ok( \@a, \@b, 'compare @a and @b' );
+      delta_ok( 1.01, 1.0099, 'values within 1.01e-3');
 
 DESCRIPTION
     At some point or another, most programmers find they need to compare
@@ -46,7 +52,8 @@ DESCRIPTION
     Because checking floating-point equality is not always reliable, it is
     not possible to check the 'equal to' boundary of 'less than or equal to
     epsilon'. Therefore, Test::Number::Delta only compares if the absolute
-    value of the difference is less than epsilon.
+    value of the difference is less than epsilon (for equality tests) or
+    greater than epsilon (for inequality tests).
 
 USAGE
   use Test::Number::Delta;
@@ -55,7 +62,8 @@ USAGE
 
   use Test::Number::Delta within => 1e-9;
     To specify a different default value for epsilon, provide a "within"
-    parameter when importing the module.
+    parameter when importing the module. The value must be a positive
+    number.
 
   use Test::Number::Delta relative => 1e-3;
     As an alternative to using a fixed value for epsilon, provide a
@@ -70,7 +78,8 @@ USAGE
     For example, a relative value of "0.01" would mean that the arguments
     are equal if they differ by less than 1% of the larger of the two
     values. A relative value of 1e-6 means that the arguments must differ by
-    less than 1 millionth of the larger value.
+    less than 1 millionth of the larger value. The relative value must be a
+    positive number.
 
   Combining with a test plan
      use Test::Number::Delta 'no_plan';
@@ -89,11 +98,11 @@ FUNCTIONS
      delta_within(  $p,  $q, $epsilon, '$p and $q are equal within $epsilon' );
      delta_within( \@p, \@q, $epsilon, '@p and @q are equal within $epsilon' );
 
-    This test compares equality within a given value of epsilon. The test is
-    true if the absolute value of the difference between $p and $q is less
-    than epsilon. If the test is true, it prints an "OK" statement for use
-    in testing. If the test is not true, this function prints a failure
-    report and diagnostic.
+    This function tests for equality within a given value of epsilon. The
+    test is true if the absolute value of the difference between $p and $q
+    is less than epsilon. If the test is true, it prints an "OK" statement
+    for use in testing. If the test is not true, this function prints a
+    failure report and diagnostic. Epsilon must be a positive number.
 
     The values to compare may be scalars or references to arrays. If the
     values are references to arrays, the comparison is done pairwise for
@@ -119,21 +128,27 @@ FUNCTIONS
      delta_ok(  $p,  $q, '$p and $q are close enough to equal' );
      delta_ok( \@p, \@q, '@p and @q are close enough to equal' );
 
-    This test compares equality using one of two pre-set approaches for
-    determining epsilon. (See "USAGE") If a "within" parameter was provided
-    during "use", that value is the default for epsilon. If a "relative"
-    parameter was provided, that value is multiplied by the larger absolute
-    value of the arguments to "delta_ok" to determine epsilon for that
-    comparison. If neither parameter was specified, the default epsilon is
-    1e-6.
+    This function tests for equality within a default epsilon value. See
+    "USAGE" for details on changing the default. Otherwise, this function
+    works the same as "delta_within".
 
-    The test is true if the absolute value of the difference between $p and
-    $q is less than epsilon. If the test is true, it prints an "OK"
-    statement for use in testing. If the test is not true, this function
-    prints a failure report and diagnostic.
+  delta_not_within
+     delta_not_within(  $p,  $q, '$p and $q are different' );
+     delta_not_within( \@p, \@q, $epsilon, '@p and @q are different' );
 
-    As with "delta_within", the values to compare may be scalars or
-    references to arrays.
+    This test compares inequality in excess of a given value of epsilon. The
+    test is true if the absolute value of the difference between $p and $q
+    is greater than epsilon. For array or matrix comparisons, the test is
+    true if *any* pair of values differs by more than epsilon. Otherwise,
+    this function works the same as "delta_within".
+
+  delta_not_ok
+     delta_not_ok(  $p,  $q, '$p and $q are different' );
+     delta_not_ok( \@p, \@q, '@p and @q are different' );
+
+    This function tests for inequality in excess of a default epsilon value.
+    See "USAGE" for details on changing the default. Otherwise, this
+    function works the same as "delta_not_within".
 
 SEE ALSO
     Test::More, Test::Harness, Test::Builder
@@ -142,7 +157,7 @@ BUGS
     Please report any bugs or feature using the CPAN Request Tracker. Bugs
     can be submitted by email to "bug-Test-Number-Delta@rt.cpan.org" or
     through the web interface at
-    <http://rt.cpan.org/Public/Dist/Display.html?Name=Test-Number-Delta>
+    <http://rt.cpan.org/Dist/Display.html?Queue=Test-Number-Delta>
 
     When submitting a bug or request, please include a test-file or a patch
     to an existing test-file that illustrates the bug or desired feature.

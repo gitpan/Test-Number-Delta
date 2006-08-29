@@ -1,5 +1,9 @@
 Revision history for Perl module Test::Number::Delta
 
+1.02 Tue Aug 29 05:37:53 EDT 2006
+    - added error checking to ensure that values of epsilon are always positive
+    - added delta_not_within() and delta_not_ok() for inequality checking
+
 1.01 Thu Jul 27 11:34:29 EDT 2006
     - changed comparison to less than epsilon, as checking "equal to"
       epsilon is, of course, not robust for floating point numbers

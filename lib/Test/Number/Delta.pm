@@ -1,10 +1,9 @@
 package Test::Number::Delta;
-use 5.004;
 use strict;
 #use warnings; bah -- not supported before 5.006
 
 use vars qw ($VERSION @EXPORT @ISA);
-$VERSION = "1.01";
+$VERSION = "1.02";
 
 # Required modules
 use Carp;
@@ -12,34 +11,40 @@ use Test::Builder;
 use Exporter;
 
 @ISA = qw( Exporter );
-@EXPORT = qw( delta_ok delta_within );
+@EXPORT = qw( delta_not_ok delta_ok delta_within delta_not_within );
 
 =head1 NAME
 
-Test::Number::Delta - Compare if the difference between numbers 
-is less than a given tolerance
+Test::Number::Delta - Compare the difference between numbers against a given tolerance
 
 =head1 SYNOPSIS
 
-  # Default tolerance
+  # Import test functions
   use Test::Number::Delta;
-  delta_ok( 1e-5, 2e-5, 'values within 1e-6'); # not ok
   
-  # Specific tolerance for a single test
-  delta_within( 1e-3, 2e-3, 1e-4, 'values within 1e-4'); not ok
+  # Equality test with default tolerance
+  delta_ok( 1e-5, 2e-5, 'values within 1e-6');
   
+  # Inequality test with default tolerance
+  delta_not_ok( 1e-5, 2e-5, 'values not within 1e-6');
+  
+  # Provide specific tolerance
+  delta_within( 1e-3, 2e-3, 1e-4, 'values within 1e-4');         
+  delta_not_within( 1e-3, 2e-3, 1e-4, 'values not within 1e-4');
+  
+  # Compare arrays or matrices
+  @a = ( 3.14, 1.41 );
+  @b = ( 3.15, 1.41 );
+  delta_ok( \@a, \@b, 'compare @a and @b' );
+
   # Set a different default tolerance 
   use Test::Number::Delta within => 1e-5;
   delta_ok( 1.1e-5, 2e-5, 'values within 1e-5'); # ok
   
   # Set a relative tolerance
   use Test::Number::Delta relative => 1e-3;
-  delta_ok( 1.01, 1.0099, 'values within 1.01e-3'); # ok
+  delta_ok( 1.01, 1.0099, 'values within 1.01e-3');
  
-  # Compare arrays or matrices
-  @a = ( 3.14, 1.41 );
-  @b = ( 3.15, 1.41 );
-  delta_ok( \@a, \@b, 'compare @a and @b' );
   
 =head1 DESCRIPTION
 
@@ -64,7 +69,8 @@ C<delta_ok>.  Both functions are exported automatically.
 Because checking floating-point equality is not always reliable, it is not
 possible to check the 'equal to' boundary of 'less than or equal to
 epsilon'.  Therefore, Test::Number::Delta only compares if the absolute value
-of the difference is B<less than> epsilon. 
+of the difference is B<less than> epsilon (for equality tests) or 
+B<greater than> epsilon (for inequality tests).
 
 =head1 USAGE
 
@@ -76,7 +82,7 @@ author's part.)
 =head2 use Test::Number::Delta within => 1e-9;
 
 To specify a different default value for epsilon, provide a C<within> parameter
-when importing the module.
+when importing the module.  The value must be a positive number.
 
 =head2 use Test::Number::Delta relative => 1e-3;
 
@@ -92,7 +98,7 @@ of the argument with the greatest magnitude.  Mathematically, for arguments
 For example, a relative value of "0.01" would mean that the arguments are equal
 if they differ by less than 1% of the larger of the two values.  A relative
 value of 1e-6 means that the arguments must differ by less than 1 millionth
-of the larger value.
+of the larger value.  The relative value must be a positive number.
 
 =head2 Combining with a test plan
 
@@ -120,7 +126,9 @@ sub import {
     croak "Can't specify more than one of 'within' or 'relative'"
         if $found > 1;
     if ($found) {
-    my ($param,$value) = splice @_, 0, 2;
+        my ($param,$value) = splice @_, 0, 2;
+        croak "'$param' parameter must be positive"
+            if $value <= 0;
         if ($param eq 'within') {
             $Epsilon = $value;
         }
@@ -133,20 +141,16 @@ sub import {
     } 
     $Test->exported_to($pack);
     $Test->plan(@_);
-    $self->export_to_level(1, $self, 'delta_ok');
-    $self->export_to_level(1, $self, 'delta_within');
+    $self->export_to_level(1, $self, $_) for @EXPORT;
 }
-
-=head1 FUNCTIONS
-
-=cut 
 
 #--------------------------------------------------------------------------#
 # _check -- recursive function to perform comparison
 #--------------------------------------------------------------------------#
 
+# logic: '1' to check within, '0' to check atleast
 sub _check {
-    my ($p, $q, $epsilon, $name, @indices) = @_;
+    my ($p, $q, $epsilon, $name, $logic, @indices) = @_;
     my ($exp) = sprintf("%e",$epsilon) =~ m/e(.+)/;
     my $ep = $exp < 0 ? -$exp : 1;
     my $dp = $ep + 1;
@@ -160,6 +164,7 @@ sub _check {
                     $q->[$i], 
                     $epsilon, 
                     $name,
+                    $logic,
                     scalar @indices ? @indices : (),
                     $i,
                 );
@@ -176,13 +181,19 @@ sub _check {
         }
     }
     else {
-        $ok = abs($p - $q) < $epsilon;
+        $ok = $logic ? abs($p - $q) < $epsilon : abs($p - $q) > $epsilon ;
         $diag = $ok ? '' :
-            sprintf("%.${dp}f and %.${dp}f are not equal to within %.${ep}f",
-                    $p, $q, $epsilon);
+            sprintf("%.${dp}f and %.${dp}f are " . 
+                    ( $logic ? "not equal" : "equal" ). 
+                    " to within %.${ep}f", $p, $q, $epsilon
+            );
     }
     return ( $ok, $diag, scalar(@indices) ? @indices : () );
 }
+
+=head1 FUNCTIONS
+
+=cut 
 
 #--------------------------------------------------------------------------#
 # delta_within()
@@ -193,10 +204,11 @@ sub _check {
  delta_within(  $p,  $q, $epsilon, '$p and $q are equal within $epsilon' );
  delta_within( \@p, \@q, $epsilon, '@p and @q are equal within $epsilon' );
 
-This test compares equality within a given value of epsilon. The test is true
-if the absolute value of the difference between $p and $q is B<less than>
+This function tests for equality within a given value of epsilon. The test is
+true if the absolute value of the difference between $p and $q is B<less than>
 epsilon.  If the test is true, it prints an "OK" statement for use in testing.
 If the test is not true, this function prints a failure report and diagnostic.
+Epsilon must be a positive number.
 
 The values to compare may be scalars or references to arrays.  If the values
 are references to arrays, the comparison is done pairwise for each index value
@@ -222,7 +234,9 @@ The sample prints the following:
 
 sub delta_within($$$;$) {
 	my ($p, $q, $epsilon, $name) = @_;
-    my ($ok, $diag, @indices) = _check( $p, $q, $epsilon, $name );
+    croak "Value of epsilon to delta_within must be positive"
+        if $epsilon <= 0;
+    my ($ok, $diag, @indices) = _check( $p, $q, $epsilon, $name, 1 );
     if ( @indices ) {
         $diag = "At [" . join( "][", @indices ) . "]: $diag";
     }
@@ -231,27 +245,16 @@ sub delta_within($$$;$) {
 
 #--------------------------------------------------------------------------#
 # delta_ok()
-#
+#--------------------------------------------------------------------------#
 
 =head2 delta_ok
  
  delta_ok(  $p,  $q, '$p and $q are close enough to equal' );
  delta_ok( \@p, \@q, '@p and @q are close enough to equal' );
 
-This test compares equality using one of two pre-set approaches for determining
-epsilon.  (See L</USAGE>)  If a C<within> parameter was provided during
-C<use>, that value is the default for epsilon.  If a C<relative> parameter was
-provided, that value is multiplied by the larger absolute value of the
-arguments to C<delta_ok> to determine epsilon for that comparison.  If neither
-parameter was specified, the default epsilon is 1e-6.
- 
-The test is true if the absolute value of the difference between $p and $q is
-B<less than> epsilon.  If the test is true, it prints an "OK"
-statement for use in testing.  If the test is not true, this function prints a
-failure report and diagnostic.
-
-As with C<delta_within>, the values to compare may be scalars or references 
-to arrays.
+This function tests for equality within a default epsilon value.  See L</USAGE>
+for details on changing the default.  Otherwise, this function works the same
+as C<delta_within>.
 
 =cut
 
@@ -263,6 +266,56 @@ sub delta_ok($$;$) {
             ? $Relative * (abs($p) > abs($q) ? abs($p) : abs($q))
             : $Epsilon;
         delta_within( $p, $q, $e, $name );
+    }
+}
+
+#--------------------------------------------------------------------------#
+# delta_not_ok()
+#--------------------------------------------------------------------------#
+
+=head2 delta_not_within
+ 
+ delta_not_within(  $p,  $q, '$p and $q are different' );
+ delta_not_within( \@p, \@q, $epsilon, '@p and @q are different' );
+
+This test compares inequality in excess of a given value of epsilon. The test
+is true if the absolute value of the difference between $p and $q is B<greater
+than> epsilon.  For array or matrix comparisons, the test is true if I<any>
+pair of values differs by more than epsilon.  Otherwise, this function works
+the same as C<delta_within>.
+
+=cut
+
+sub delta_not_within($$$;$) {
+	my ($p, $q, $epsilon, $name) = @_;
+    croak "Value of epsilon to delta_not_within must be positive"
+        if $epsilon <= 0;
+    my ($ok, $diag, @indices) = _check( $p, $q, $epsilon, $name, 0 );
+    if ( @indices ) {
+        $diag = "At [" . join( "][", @indices ) . "]: $diag";
+    }
+    return $Test->ok($ok,$name) || $Test->diag( $diag );
+}
+
+=head2 delta_not_ok
+ 
+ delta_not_ok(  $p,  $q, '$p and $q are different' );
+ delta_not_ok( \@p, \@q, '@p and @q are different' );
+
+This function tests for inequality in excess of a default epsilon value.  See
+L</USAGE> for details on changing the default.  Otherwise, this function works
+the same as C<delta_not_within>.
+
+=cut
+
+sub delta_not_ok($$;$) {
+	my ($p, $q, $name) = @_;
+    {
+        local $Test::Builder::Level = $Test::Builder::Level + 1;
+        my $e = $Relative 
+            ? $Relative * (abs($p) > abs($q) ? abs($p) : abs($q))
+            : $Epsilon;
+        delta_not_within( $p, $q, $e, $name );
     }
 }
 
@@ -279,7 +332,7 @@ L<Test::More>, L<Test::Harness>, L<Test::Builder>
 Please report any bugs or feature using the CPAN Request Tracker.  
 Bugs can be submitted by email to C<bug-Test-Number-Delta@rt.cpan.org> or 
 through the web interface at 
-L<http://rt.cpan.org/Public/Dist/Display.html?Name=Test-Number-Delta>
+L<http://rt.cpan.org/Dist/Display.html?Queue=Test-Number-Delta>
 
 When submitting a bug or request, please include a test-file or a patch to an
 existing test-file that illustrates the bug or desired feature.
