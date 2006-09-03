@@ -1,6 +1,6 @@
 use strict;
 
-use Test::Builder::Tester tests => 22;
+use Test::Builder::Tester tests => 25;
 use Test::Number::Delta;
 
 select(STDERR); $|++;
@@ -26,12 +26,12 @@ test_test("delta_ok(\$a,\$b) pass works");
 
 test_out("not ok 1 - foo");
 test_fail(+2);
-test_diag("0.0000001 and 0.0000002 are equal to within 0.000001");
+test_diag("Arguments are equal to within 0.000001");
 delta_not_ok(1e-7, 2e-7, "foo");
 test_test("delta_not_ok(\$a,\$b) fail works");
 
 test_out("ok 1 - foo");
-delta_not_ok(1.1e-5, 1e-5, "foo");
+delta_not_ok(1.2e-5, 1e-5, "foo");
 test_test("delta_not_ok(\$a,\$b) pass works");
 
 #--------------------------------------------------------------------------#
@@ -44,9 +44,19 @@ test_diag("0.00100 and 0.00200 are not equal to within 0.0001");
 delta_within(1e-3, 2e-3, 1e-4, "foo");
 test_test("delta_within(\$a,\$b,\$e) fail works");
 
+test_out("not ok 1 - foo");
+test_fail(+2);
+test_diag("0.00100 and 0.00200 are not equal to within 0.0001");
+delta_within(1e-3, 2e-3, -1e-4, "foo");
+test_test("delta_within(\$a,\$b,-\$e) fail works");
+
 test_out("ok 1 - foo");
 delta_within(1.1e-4, 2e-4, 1e-4, "foo");
 test_test("delta_within(\$a,\$b,\$e) pass works");
+
+test_out("ok 1 - foo");
+delta_within(1.1e-4, 2e-4, -1e-4, "foo");
+test_test("delta_within(\$a,\$b,-\$e) pass works");
 
 #--------------------------------------------------------------------------#
 # scalar -- delta_not_within
@@ -54,13 +64,23 @@ test_test("delta_within(\$a,\$b,\$e) pass works");
 
 test_out("not ok 1 - foo");
 test_fail(+2);
-test_diag("0.001 and 0.002 are equal to within 0.01");
+test_diag("Arguments are equal to within 0.01");
 delta_not_within(1e-3, 2e-3, 1e-2, "foo");
 test_test("delta_not_within(\$a,\$b,\$e) fail works");
+
+test_out("not ok 1 - foo");
+test_fail(+2);
+test_diag("Arguments are equal to within 0.01");
+delta_not_within(1e-3, 2e-3, -1e-2, "foo");
+test_test("delta_not_within(\$a,\$b,-\$e) fail works");
 
 test_out("ok 1 - foo");
 delta_not_within(1.1e-4, 2e-4, 1e-5, "foo");
 test_test("delta_not_within(\$a,\$b,\$e) pass works");
+
+test_out("ok 1 - foo");
+delta_not_within(1.1e-4, 2e-4, -1e-5, "foo");
+test_test("delta_not_within(\$a,\$b,-\$e) pass works");
 
 #--------------------------------------------------------------------------#
 # list - length
@@ -92,18 +112,12 @@ test_test("delta_ok(\\\@a,\\\@b) pairwise pass works");
 
 test_out("not ok 1 - foo");
 test_fail(+2);
-test_diag("At [0]: 0.0000001 and 0.0000001 are equal to within 0.000001");
-delta_not_ok( [1e-7, 2e-7], [1e-7, 3e-7], "foo");
+test_diag("Arguments are equal to within 0.000001");
+delta_not_ok( [1e-7, 2e-7], [1e-7, 2e-7], "foo");
 test_test("delta_not_ok(\\\@a,\\\@b) pairwise fail at [0] works");
 
-test_out("not ok 1 - foo");
-test_fail(+2);
-test_diag("At [1]: 0.0000002 and 0.0000003 are equal to within 0.000001");
-delta_not_ok( [1e-5, 2e-7], [2e-5, 3e-7], "foo");
-test_test("delta_not_ok(\\\@a,\\\@b) pairwise fail at [1] works");
-
 test_out("ok 1 - foo");
-delta_not_ok( [1e-5, 2e-5], [2e-5, 3e-5], "foo");
+delta_not_ok( [1e-5, 2e-5], [1e-5, 3e-5], "foo");
 test_test("delta_not_ok(\\\@a,\\\@b) pairwise pass works");
 
 #--------------------------------------------------------------------------#
@@ -126,12 +140,12 @@ test_test("delta_ok(\\\@a,\\\@b) matrix pass works");
 
 test_out("not ok 1 - foo");
 test_fail(+2);
-test_diag("At [1][0]: 0.0000003 and 0.0000001 are equal to within 0.000001");
-delta_not_ok( [[1e-5, 3e-5], [3e-7, 5e-5]], [[2e-5, 2e-5], [1e-7, 4e-5]], "foo");
+test_diag("Arguments are equal to within 0.000001");
+delta_not_ok( [[1e-7, 2e-7], [3e-7, 4e-7]], [[2e-7, 3e-7], [4e-7, 5e-7]], "foo");
 test_test("delta_not_ok(\\\@a,\\\@b) matrix fail works");
 
 test_out("ok 1 - foo");
-delta_not_ok( [[1e-5, 2e-5], [3e-5, 4e-5]], [[5e-5, 6e-5], [7e-5, 8e-5]], "foo");
+delta_not_ok( [[1e-7, 2e-7], [3e-7, 4e-5]], [[5e-7, 6e-7], [7e-7, 8e-5]], "foo");
 test_test("delta_not_ok(\\\@a,\\\@b) matrix pass works");
 
 #--------------------------------------------------------------------------#
@@ -154,8 +168,8 @@ test_test("delta_within(\\\@a,\\\@b,\$e) matrix pass works");
 
 test_out("not ok 1 - foo");
 test_fail(+2);
-test_diag("At [1][0]: 0.00003 and 0.00007 are equal to within 0.0001");
-delta_not_within( [[1e-3, 2e-3], [3e-5, 4e-3]], [[5e-3, 6e-3], [7e-5, 8e-3]], 1e-4, "foo");
+test_diag("Arguments are equal to within 0.0001");
+delta_not_within( [[1e-5, 2e-5], [3e-5, 4e-5]], [[5e-5, 6e-5], [7e-5, 8e-5]], 1e-4, "foo");
 test_test("delta_not_within(\\\@a,\\\@b,\$e) matrix fail works");
 
 test_out("ok 1 - foo");

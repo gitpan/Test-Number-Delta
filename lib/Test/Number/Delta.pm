@@ -3,7 +3,7 @@ use strict;
 #use warnings; bah -- not supported before 5.006
 
 use vars qw ($VERSION @EXPORT @ISA);
-$VERSION = "1.02";
+$VERSION = "1.03";
 
 # Required modules
 use Carp;
@@ -82,7 +82,7 @@ author's part.)
 =head2 use Test::Number::Delta within => 1e-9;
 
 To specify a different default value for epsilon, provide a C<within> parameter
-when importing the module.  The value must be a positive number.
+when importing the module.  The value must be non-zero.
 
 =head2 use Test::Number::Delta relative => 1e-3;
 
@@ -98,7 +98,7 @@ of the argument with the greatest magnitude.  Mathematically, for arguments
 For example, a relative value of "0.01" would mean that the arguments are equal
 if they differ by less than 1% of the larger of the two values.  A relative
 value of 1e-6 means that the arguments must differ by less than 1 millionth
-of the larger value.  The relative value must be a positive number.
+of the larger value.  The relative value must be non-zero.
 
 =head2 Combining with a test plan
 
@@ -127,13 +127,13 @@ sub import {
         if $found > 1;
     if ($found) {
         my ($param,$value) = splice @_, 0, 2;
-        croak "'$param' parameter must be positive"
-            if $value <= 0;
+        croak "'$param' parameter must be non-zero"
+            if $value == 0;
         if ($param eq 'within') {
-            $Epsilon = $value;
+            $Epsilon = abs($value);
         }
         elsif ($param eq 'relative') {
-            $Relative = $value;
+            $Relative = abs($value);
         }
         else {
             croak "Test::Number::Delta parameters must come first";
@@ -148,12 +148,8 @@ sub import {
 # _check -- recursive function to perform comparison
 #--------------------------------------------------------------------------#
 
-# logic: '1' to check within, '0' to check atleast
 sub _check {
-    my ($p, $q, $epsilon, $name, $logic, @indices) = @_;
-    my ($exp) = sprintf("%e",$epsilon) =~ m/e(.+)/;
-    my $ep = $exp < 0 ? -$exp : 1;
-    my $dp = $ep + 1;
+    my ($p, $q, $epsilon, $name, @indices) = @_;
     my ($ok, $diag) = ( 1, q{} ); # assume true
     if ( ref $p eq 'ARRAY' || ref $q eq 'ARRAY' ) {
         if ( @$p == @$q ) {
@@ -164,7 +160,6 @@ sub _check {
                     $q->[$i], 
                     $epsilon, 
                     $name,
-                    $logic,
                     scalar @indices ? @indices : (),
                     $i,
                 );
@@ -181,14 +176,23 @@ sub _check {
         }
     }
     else {
-        $ok = $logic ? abs($p - $q) < $epsilon : abs($p - $q) > $epsilon ;
-        $diag = $ok ? '' :
-            sprintf("%.${dp}f and %.${dp}f are " . 
-                    ( $logic ? "not equal" : "equal" ). 
-                    " to within %.${ep}f", $p, $q, $epsilon
+        $ok = abs($p - $q) < $epsilon;
+        if ( ! $ok ) {
+            my ($ep, $dp) = _ep_dp( $epsilon );
+            $diag = sprintf("%.${dp}f and %.${dp}f are not equal" . 
+                " to within %.${ep}f", $p, $q, $epsilon
             );
+        }
     }
     return ( $ok, $diag, scalar(@indices) ? @indices : () );
+}
+
+sub _ep_dp {
+    my $epsilon = shift;
+    my ($exp) = sprintf("%e",$epsilon) =~ m/e(.+)/;
+    my $ep = $exp < 0 ? -$exp : 1;
+    my $dp = $ep + 1;
+    return ($ep, $dp);
 }
 
 =head1 FUNCTIONS
@@ -208,7 +212,7 @@ This function tests for equality within a given value of epsilon. The test is
 true if the absolute value of the difference between $p and $q is B<less than>
 epsilon.  If the test is true, it prints an "OK" statement for use in testing.
 If the test is not true, this function prints a failure report and diagnostic.
-Epsilon must be a positive number.
+Epsilon must be non-zero.
 
 The values to compare may be scalars or references to arrays.  If the values
 are references to arrays, the comparison is done pairwise for each index value
@@ -234,9 +238,10 @@ The sample prints the following:
 
 sub delta_within($$$;$) {
 	my ($p, $q, $epsilon, $name) = @_;
-    croak "Value of epsilon to delta_within must be positive"
-        if $epsilon <= 0;
-    my ($ok, $diag, @indices) = _check( $p, $q, $epsilon, $name, 1 );
+    croak "Value of epsilon to delta_within must be non-zero"
+        if $epsilon == 0;
+    $epsilon = abs($epsilon);
+    my ($ok, $diag, @indices) = _check( $p, $q, $epsilon, $name );
     if ( @indices ) {
         $diag = "At [" . join( "][", @indices ) . "]: $diag";
     }
@@ -288,12 +293,13 @@ the same as C<delta_within>.
 
 sub delta_not_within($$$;$) {
 	my ($p, $q, $epsilon, $name) = @_;
-    croak "Value of epsilon to delta_not_within must be positive"
-        if $epsilon <= 0;
-    my ($ok, $diag, @indices) = _check( $p, $q, $epsilon, $name, 0 );
-    if ( @indices ) {
-        $diag = "At [" . join( "][", @indices ) . "]: $diag";
-    }
+    croak "Value of epsilon to delta_not_within must be non-zero"
+        if $epsilon == 0;
+    $epsilon = abs($epsilon);
+    my ($ok, undef, @indices) = _check( $p, $q, $epsilon, $name );
+    $ok = !$ok;
+    my ($ep, $dp) = _ep_dp( $epsilon );
+    my $diag = sprintf("Arguments are equal to within %.${ep}f", $epsilon);
     return $Test->ok($ok,$name) || $Test->diag( $diag );
 }
 

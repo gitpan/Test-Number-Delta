@@ -62,8 +62,7 @@ USAGE
 
   use Test::Number::Delta within => 1e-9;
     To specify a different default value for epsilon, provide a "within"
-    parameter when importing the module. The value must be a positive
-    number.
+    parameter when importing the module. The value must be non-zero.
 
   use Test::Number::Delta relative => 1e-3;
     As an alternative to using a fixed value for epsilon, provide a
@@ -78,8 +77,8 @@ USAGE
     For example, a relative value of "0.01" would mean that the arguments
     are equal if they differ by less than 1% of the larger of the two
     values. A relative value of 1e-6 means that the arguments must differ by
-    less than 1 millionth of the larger value. The relative value must be a
-    positive number.
+    less than 1 millionth of the larger value. The relative value must be
+    non-zero.
 
   Combining with a test plan
      use Test::Number::Delta 'no_plan';
@@ -102,7 +101,7 @@ FUNCTIONS
     test is true if the absolute value of the difference between $p and $q
     is less than epsilon. If the test is true, it prints an "OK" statement
     for use in testing. If the test is not true, this function prints a
-    failure report and diagnostic. Epsilon must be a positive number.
+    failure report and diagnostic. Epsilon must be non-zero.
 
     The values to compare may be scalars or references to arrays. If the
     values are references to arrays, the comparison is done pairwise for

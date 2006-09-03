@@ -1,5 +1,10 @@
 Revision history for Perl module Test::Number::Delta
 
+1.03 Sun Sep  3 03:21:59 EDT 2006
+    - fixed logic errors for delta_not_*
+    - changed epsilon restriction to just non-zero; negative epsilons are
+      the same as positive
+    
 1.02 Tue Aug 29 05:37:53 EDT 2006
     - added error checking to ensure that values of epsilon are always positive
     - added delta_not_within() and delta_not_ok() for inequality checking

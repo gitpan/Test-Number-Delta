@@ -1,7 +1,7 @@
 use strict;
 
 use Test::Builder::Tester tests => 12;
-use Test::Number::Delta relative => 1e-2;
+use Test::Number::Delta relative => -1e-2;
 
 #--------------------------------------------------------------------------#
 # delta_ok

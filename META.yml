@@ -1,6 +1,6 @@
 ---
 name: Test-Number-Delta
-version: 1.02
+version: 1.03
 author:
   - 'David A. Golden <dagolden@cpan.org>'
 abstract: Compare the difference between numbers against a given tolerance
@@ -15,7 +15,7 @@ requires:
 provides:
   Test::Number::Delta:
     file: lib/Test/Number/Delta.pm
-    version: 1.02
+    version: 1.03
 generated_by: Module::Build version 0.2805
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html
