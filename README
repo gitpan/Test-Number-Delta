@@ -3,7 +3,7 @@ NAME
     given tolerance
 
 VERSION
-    version 1.04
+    version 1.05
 
 SYNOPSIS
       # Import test functions
@@ -170,7 +170,7 @@ AUTHOR
     David Golden <dagolden@cpan.org>
 
 COPYRIGHT AND LICENSE
-    This software is Copyright (c) 2013 by David Golden.
+    This software is Copyright (c) 2014 by David Golden.
 
     This is free software, licensed under:
 

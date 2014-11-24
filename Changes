@@ -1,5 +1,14 @@
 Revision history for Perl module Test::Number::Delta
 
+1.05      2014-11-24 11:08:11-05:00 America/New_York
+
+    [Fixed]
+
+    - relative comparison of array reference elements now works as intended
+
+    - diagnostics of delta_not_ok and delta_not_within clarified under
+      relative comparison
+
 1.04      2013-11-20 18:43:32 America/New_York
 
     - Modernized distribution metadata and licensing
