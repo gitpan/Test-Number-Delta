@@ -4,7 +4,7 @@ use warnings;
 package Test::Number::Delta;
 # ABSTRACT: Compare the difference between numbers against a given tolerance
 
-our $VERSION = '1.05';
+our $VERSION = '1.06';
 
 use vars qw (@EXPORT @ISA);
 
@@ -184,7 +184,7 @@ sub _check {
         }
     }
     else {
-        $ok = abs( $p - $q ) < $epsilon;
+        $ok = $p == $q || abs( $p - $q ) < $epsilon;
         if ( !$ok ) {
             my ( $ep, $dp ) = _ep_dp($epsilon);
             $diag = sprintf( "%.${dp}f and %.${dp}f are not equal" . " to within %.${ep}f",
@@ -195,8 +195,8 @@ sub _check {
 }
 
 sub _ep_dp {
-    my $epsilon = shift
-      or return;
+    my $epsilon = shift;
+    return ( 0, 0 ) unless $epsilon;
     $epsilon = abs($epsilon);
     my ($exp) = sprintf( "%e", $epsilon ) =~ m/e(.+)/;
     my $ep = $exp < 0 ? -$exp : 1;
@@ -355,6 +355,14 @@ sub delta_not_ok($$;$) { ## no critic
     }
 }
 
+#pod =head1 SEE ALSO
+#pod
+#pod =for :list
+#pod * L<Number::Tolerant>
+#pod * L<Test::Deep::NumberTolerant>
+#pod
+#pod =cut
+
 1;
 
 __END__
@@ -369,7 +377,7 @@ Test::Number::Delta - Compare the difference between numbers against a given tol
 
 =head1 VERSION
 
-version 1.05
+version 1.06
 
 =head1 SYNOPSIS
 
@@ -527,6 +535,20 @@ the same as C<delta_within>.
 This function tests for inequality in excess of a default epsilon value.  See
 L</USAGE> for details on changing the default.  Otherwise, this function works
 the same as C<delta_not_within>.
+
+=head1 SEE ALSO
+
+=over 4
+
+=item *
+
+L<Number::Tolerant>
+
+=item *
+
+L<Test::Deep::NumberTolerant>
+
+=back
 
 =for :stopwords cpan testmatrix url annocpan anno bugtracker rt cpants kwalitee diff irc mailto metadata placeholders metacpan
 

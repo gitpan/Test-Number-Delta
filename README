@@ -3,7 +3,7 @@ NAME
     given tolerance
 
 VERSION
-    version 1.05
+    version 1.06
 
 SYNOPSIS
       # Import test functions
@@ -151,6 +151,11 @@ FUNCTIONS
     This function tests for inequality in excess of a default epsilon value.
     See "USAGE" for details on changing the default. Otherwise, this
     function works the same as "delta_not_within".
+
+SEE ALSO
+    *   Number::Tolerant
+
+    *   Test::Deep::NumberTolerant
 
 SUPPORT
   Bugs / Feature Requests

@@ -29,7 +29,7 @@ no_index:
 provides:
   Test::Number::Delta:
     file: lib/Test/Number/Delta.pm
-    version: '1.05'
+    version: '1.06'
 requires:
   Carp: '0'
   Exporter: '0'
@@ -42,5 +42,5 @@ resources:
   bugtracker: https://github.com/dagolden/Test-Number-Delta/issues
   homepage: https://github.com/dagolden/Test-Number-Delta
   repository: https://github.com/dagolden/Test-Number-Delta.git
-version: '1.05'
+version: '1.06'
 x_authority: cpan:DAGOLDEN

@@ -75,7 +75,7 @@
    "provides" : {
       "Test::Number::Delta" : {
          "file" : "lib/Test/Number/Delta.pm",
-         "version" : "1.05"
+         "version" : "1.06"
       }
    },
    "release_status" : "stable",
@@ -90,7 +90,7 @@
          "web" : "https://github.com/dagolden/Test-Number-Delta"
       }
    },
-   "version" : "1.05",
+   "version" : "1.06",
    "x_authority" : "cpan:DAGOLDEN"
 }
 
